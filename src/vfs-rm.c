@@ -1,0 +1,1 @@
+//Borra uno o mas archivos, Solo se pueden borrar archivos regulares
