@@ -1,9 +1,10 @@
-// src/vfs-touch.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "vfs.h"
+
+#define DEFAULT_PERMISSIONS 0644
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
@@ -11,33 +12,44 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    const char *image = argv[1];
+    const char *image_path = argv[1];
 
     for (int i = 2; i < argc; i++) {
         const char *filename = argv[i];
 
+        // Validar nombre
         if (!name_is_valid(filename)) {
-            fprintf(stderr, "Nombre inválido: %s\n", filename);
+            fprintf(stderr, "Nombre inválido: '%s'\n", filename);
             continue;
         }
 
-        if (dir_lookup(image, filename) != -1) {
-            fprintf(stderr, "El archivo ya existe: %s\n", filename);
+        // Verificar si ya existe
+        int found_inode = dir_lookup(image_path, filename);
+        if (found_inode > 0) {
+            fprintf(stderr, "El archivo '%s' ya existe.\n", filename);
+            continue;
+        } else if (found_inode < 0) {
+            fprintf(stderr, "Error al buscar el archivo '%s'.\n", filename);
             continue;
         }
 
-        int inodo_nro = create_empty_file_in_free_inode(image, 0644);
-        if (inodo_nro < 0) {
-            fprintf(stderr, "No se pudo crear inodo para %s\n", filename);
+        // Crear archivo vacío en un nodo-i libre
+        int inode_number = create_empty_file_in_free_inode(image_path, DEFAULT_PERMISSIONS);
+        if (inode_number < 0) {
+            fprintf(stderr, "No se pudo crear el archivo '%s': sin nodos-i libres.\n", filename);
             continue;
         }
 
-        if (add_dir_entry(image, filename, inodo_nro) != 0) {
-            fprintf(stderr, "Error al agregar entrada para %s\n", filename);
+        // Agregar al directorio
+        if (add_dir_entry(image_path, filename, inode_number) < 0) {
+            fprintf(stderr, "No se pudo agregar '%s' al directorio raíz.\n", filename);
+            // Revertir creación si se desea (opcional)
+            // free_inode(image_path, inode_number);
             continue;
         }
+
+        printf("Archivo creado: %s (inode %d)\n", filename, inode_number);
     }
 
     return EXIT_SUCCESS;
 }
-//test comment
