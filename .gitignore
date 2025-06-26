@@ -3,3 +3,7 @@ a.out
 #/vfs-*
 .vscode/
 *.img
+*
+!/**/
+!*.*
+*.img
