@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
         }
 
         // Crear archivo vacío en un nodo-i libre
-        int inode_number = create_empty_file_in_free_inode(image_path, DEFAULT_PERMISSIONS);
+        int inode_number = create_empty_file_in_free_inode(image_path, DEFAULT_PERM);
         if (inode_number < 0) {
             fprintf(stderr, "No se pudo crear el archivo '%s': sin nodos-i libres.\n", filename);
             continue;
