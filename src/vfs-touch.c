@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include "vfs.h"
 
-#define DEFAULT_PERMISSIONS 0644
 
 int main(int argc, char *argv[]) {
+    //Validamos minimo de argumentos
     if (argc < 3) {
         fprintf(stderr, "Uso: %s imagen archivo1 [archivo2...]\n", argv[0]);
         return EXIT_FAILURE;
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        // Crear archivo vacío en un nodo-i libre
+        // Crear archivo vacío en un inodo libre
         int inode_number = create_empty_file_in_free_inode(image_path, DEFAULT_PERM);
         if (inode_number < 0) {
             fprintf(stderr, "Error: no se pudo crear '%s': sin nodos-i libres.\n", filename);
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
         // Agregar al directorio
         if (add_dir_entry(image_path, filename, inode_number) < 0) {
             fprintf(stderr, "Error: no se pudo agregar '%s' al directorio raíz.\n", filename);
-            // free_inode(image_path, inode_number);
+            free_inode(image_path, inode_number); //Liberar el inodo del paso anterior si no se puede agregar al directorio
             continue;
         }
 

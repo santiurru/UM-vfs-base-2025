@@ -8,7 +8,7 @@
 
 // Estructura auxiliar para ordenar
 typedef struct {
-    char name[FILENAME_MAX_LEN + 1];
+    char name[FILENAME_MAX_LEN + 1]; //mayor largo para poder comparar
     uint32_t inode_number;
 } dir_entry_info;
 
@@ -28,13 +28,13 @@ int main(int argc, char *argv[]) {
 
     // 1) Leer el inodo del directorio raíz (siempre inode 1)
     struct inode root_inode;
-    if (read_inode(image_path, 1, &root_inode) != 0) {
+    if (read_inode(image_path, ROOTDIR_INODE, &root_inode) != 0) {
         fprintf(stderr, "Error: no se pudo leer el inodo raíz\n");
         return EXIT_FAILURE;
     }
 
     if (root_inode.blocks == 0) {
-        // ningún bloque asignado → directorio vacío
+        // ningún bloque asignado ==> directorio vacío
         return EXIT_SUCCESS;
     }
 
@@ -42,8 +42,6 @@ int main(int argc, char *argv[]) {
     dir_entry_info entries[MAX_FILES];
     uint32_t count = 0;
 
-    // Cada bloque puede contener BLOCK_SIZE/sizeof(struct dir_entry) entradas
-    uint32_t per_block = BLOCK_SIZE / sizeof(struct dir_entry);
     uint8_t buffer[BLOCK_SIZE];
 
     for (uint16_t b = 0; b < root_inode.blocks; b++) {
@@ -57,7 +55,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
         struct dir_entry *de = (struct dir_entry *)buffer;
-        for (uint32_t i = 0; i < per_block && count < MAX_FILES; i++) {
+        for (uint32_t i = 0; i < DIR_ENTRIES_PER_BLOCK && count < MAX_FILES; i++) {
             if (de[i].inode == 0) 
                 continue;
             // Copiar nombre asegurando terminación
