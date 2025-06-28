@@ -19,31 +19,30 @@ int main(int argc, char *argv[]) {
 
         // Validar nombre
         if (!name_is_valid(filename)) {
-            fprintf(stderr, "Nombre inválido: '%s'\n", filename);
+            fprintf(stderr, "Error: el nombre '%s' no es válido.\n", filename);
             continue;
         }
 
         // Verificar si ya existe
         int found_inode = dir_lookup(image_path, filename);
         if (found_inode > 0) {
-            fprintf(stderr, "El archivo '%s' ya existe.\n", filename);
+            fprintf(stderr, "Error: el archivo '%s' ya existe en la imagen.\n", filename);
             continue;
         } else if (found_inode < 0) {
-            fprintf(stderr, "Error al buscar el archivo '%s'.\n", filename);
+            fprintf(stderr, "Error: no se pudo verificar la existencia de '%s'.\n", filename);
             continue;
         }
 
         // Crear archivo vacío en un nodo-i libre
         int inode_number = create_empty_file_in_free_inode(image_path, DEFAULT_PERM);
         if (inode_number < 0) {
-            fprintf(stderr, "No se pudo crear el archivo '%s': sin nodos-i libres.\n", filename);
+            fprintf(stderr, "Error: no se pudo crear '%s': sin nodos-i libres.\n", filename);
             continue;
         }
 
         // Agregar al directorio
         if (add_dir_entry(image_path, filename, inode_number) < 0) {
-            fprintf(stderr, "No se pudo agregar '%s' al directorio raíz.\n", filename);
-            // Revertir creación si se desea (opcional)
+            fprintf(stderr, "Error: no se pudo agregar '%s' al directorio raíz.\n", filename);
             // free_inode(image_path, inode_number);
             continue;
         }
